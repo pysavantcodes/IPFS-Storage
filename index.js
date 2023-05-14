@@ -13,7 +13,7 @@ const nftStorage = new NFTStorage({
 }); 
 
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("Welcome to Pysavant Unlimited Storage");
 });
 
 app.post("/upload", async (req, res, next) => {
