@@ -6,7 +6,12 @@ const app = express();
 const cors = require("cors");
 const fs = require("fs");
 const fetch = require("node-fetch");
-app.use(cors({ origin: "*", methods: "GET, PUT" }));
+let multer = require("multer");
+const fileUpload = require("express-fileupload");
+const upload = multer({ dest: "uploads/" });
+app.use(cors({ origin: "*", methods: "GET, POST" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload());
 
 const nftStorage = new NFTStorage({
   token: process.env.IPFS_GATEWAY_TOKEN,
@@ -17,34 +22,28 @@ app.get("/", (req, res) => {
 });
 
 app.post("/upload", async (req, res, next) => {
-  const form = formidable({ multiples: false });
+  const file = req.files.image;
 
-  form.parse(req, async (err, files) => {
-    if (err) {
-      next(err);
-      return;
-    }
+  const { name, mimetype, tempFilePath, data } = file;
+  // const data = await fs.promises.readFile(tempFilePath);
+  // res.json({ message: data.toString('utf8') });
 
-    const { originalFilename, mimetype, filepath } = files.image;
-    const data = await fs.promises.readFile(filepath);
-
-    const metadata = await nftStorage.store({
-      name: originalFilename,
-      description: mimetype,
-      image: new File([data], originalFilename, { mimetype }),
-    });
-
-    await fetch(`https://ipfs.io/ipfs/${metadata.ipnft}/metadata.json`)
-      .then(async (response) => {
-        return response.json();
-      })
-      .then(async (data) => {
-        const url = `https://${
-          data.image.split("ipfs://")[1].split("/")[0]
-        }.ipfs.dweb.link/${data.image.split("ipfs://")[1].split("/")[1]}`;
-        res.json(url);
-      });
+  const metadata = await nftStorage.store({
+    name: name,
+    description: mimetype,
+    image: new File([data.toString("utf8")], name, { mimetype }),
   });
+
+  await fetch(`https://ipfs.io/ipfs/${metadata.ipnft}/metadata.json`)
+    .then(async (response) => {
+      return response.json();
+    })
+    .then(async (data) => {
+      const url = `https://${
+        data.image.split("ipfs://")[1].split("/")[0]
+      }.ipfs.dweb.link/${data.image.split("ipfs://")[1].split("/")[1]}`;
+      res.json(url);
+    });
 });
 
 app.listen(5000, () => {
