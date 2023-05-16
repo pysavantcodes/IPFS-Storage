@@ -1,14 +1,10 @@
 require("dotenv").config();
 const { NFTStorage, File } = require("nft.storage");
-const formidable = require("formidable");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const fs = require("fs");
 const fetch = require("node-fetch");
-let multer = require("multer");
 const fileUpload = require("express-fileupload");
-const upload = multer({ dest: "uploads/" });
 app.use(cors({ origin: "*", methods: "GET, POST" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
@@ -24,9 +20,7 @@ app.get("/", (req, res) => {
 app.post("/upload", async (req, res, next) => {
   const file = req.files.image;
 
-  const { name, mimetype, tempFilePath, data } = file;
-  // const data = await fs.promises.readFile(tempFilePath);
-  // res.json({ message: data.toString('utf8') });
+  const { name, mimetype, data } = file;
 
   const metadata = await nftStorage.store({
     name: name,
