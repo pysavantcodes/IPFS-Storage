@@ -1,4 +1,4 @@
-require('dotenv').config(); 
+require("dotenv").config();
 const { NFTStorage, File } = require("nft.storage");
 const formidable = require("formidable");
 const express = require("express");
@@ -6,11 +6,11 @@ const app = express();
 const cors = require("cors");
 const fs = require("fs");
 const fetch = require("node-fetch");
-app.use(cors({origin:"*"}));
+app.use(cors({ origin: "*", methods: "GET, PUT" }));
 
 const nftStorage = new NFTStorage({
   token: process.env.IPFS_GATEWAY_TOKEN,
-}); 
+});
 
 app.get("/", (req, res) => {
   res.send("Welcome to Pysavant Unlimited Storage");
