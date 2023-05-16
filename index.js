@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { NFTStorage, File } = require("nft.storage");
+const { NFTStorage, Blob } = require("nft.storage");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -22,22 +22,10 @@ app.post("/upload", async (req, res, next) => {
 
   const { name, mimetype, data } = file;
 
-  const metadata = await nftStorage.store({
-    name: name,
-    description: mimetype,
-    image: new File([data.toString("utf8")], name, { mimetype }),
-  });
+  const content = new Blob([data]);
+  const cid = await nftStorage.storeBlob(content);
 
-  await fetch(`https://ipfs.io/ipfs/${metadata.ipnft}/metadata.json`)
-    .then(async (response) => {
-      return response.json();
-    })
-    .then(async (data) => {
-      const url = `https://${
-        data.image.split("ipfs://")[1].split("/")[0]
-      }.ipfs.dweb.link/${data.image.split("ipfs://")[1].split("/")[1]}`;
-      res.json(url);
-    });
+  res.json(`https://${cid}.ipfs.dweb.link`)
 });
 
 app.listen(5000, () => {
