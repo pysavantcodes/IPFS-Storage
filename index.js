@@ -6,7 +6,7 @@ const app = express();
 const cors = require("cors");
 const fs = require("fs");
 const fetch = require("node-fetch");
-app.use(cors());
+app.use(cors({origin:"*"}));
 
 const nftStorage = new NFTStorage({
   token: process.env.IPFS_GATEWAY_TOKEN,
