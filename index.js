@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 app.post("/upload", async (req, res, next) => {
   const form = formidable({ multiples: false });
 
-  form.parse(req, async (err, fields, files) => {
+  form.parse(req, async (err, files) => {
     if (err) {
       next(err);
       return;
