@@ -5,6 +5,10 @@ const app = express();
 const cors = require("cors");
 const fetch = require("node-fetch");
 const fileUpload = require("express-fileupload");
+
+const PORT = process.env.PORT || 5000;
+
+// Middleware
 app.use(cors({ origin: "*", methods: "GET, POST" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
@@ -18,16 +22,30 @@ app.get("/", (req, res) => {
 });
 
 app.post("/upload", async (req, res, next) => {
-  const file = req.files.image;
+  try {
+    const file = req.files.image;
 
-  const { name, mimetype, data } = file;
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-  const content = new Blob([data]);
-  const cid = await nftStorage.storeBlob(content);
+    const { name, mimetype, data } = file;
 
-  res.json(`https://${cid}.ipfs.dweb.link`)
+    const content = new Blob([data]);
+    const cid = await nftStorage.storeBlob(content);
+
+    res.json(`https://${cid}.ipfs.w3s.link`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-app.listen(5000, () => {
-  console.log("Server is running on port 5000");
+if (!process.env.IPFS_GATEWAY_TOKEN) {
+  console.error("IPFS_GATEWAY_TOKEN not found in environment variables");
+  process.exit(1);
+}
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
